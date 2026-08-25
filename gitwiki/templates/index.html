@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ settings.site_name }} - Home{% endblock %}
+{% block content %}
+<div class="home-page">
+    <h1>Welcome to {{ settings.site_name }}</h1>
+    <p>A Git-powered wiki. Every edit is a commit.</p>
+
+    {% if pages %}
+    <div class="page-list">
+        <h2>Pages</h2>
+        <ul>
+            {% for page in pages %}
+                <li><a href="/{{ page }}">{{ page }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+        <p>No pages yet. <a href="/Main_Page?action=edit">Create the first page</a>.</p>
+    {% endif %}
+
+    <div class="actions">
+        <a href="/New_Page?action=edit" class="btn btn-primary">Create New Page</a>
+    </div>
+</div>
+{% endblock %}

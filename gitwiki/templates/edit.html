@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ name }} - {{ settings.site_name }}{% endblock %}
+{% block content %}
+<div class="edit-page">
+    <h1>{% if new_page %}Create: {{ name }}{% else %}Edit: {{ name }}{% endif %}</h1>
+
+    <form method="post" action="/{{ name }}/edit" class="edit-form">
+        <div class="form-group">
+            <label for="author">Your Name</label>
+            <input type="text" id="author" name="author" placeholder="Anonymous"
+                   value="{{ request.cookies.get('wiki_author', '') }}">
+        </div>
+
+        <div class="form-group">
+            <label for="message">Edit Summary</label>
+            <input type="text" id="message" name="message" placeholder="What changed?">
+        </div>
+
+        <div class="form-group">
+            <label for="content">Page Content (Markdown)</label>
+            <textarea id="content" name="content" rows="25">{{ content }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <div class="markup-help">
+                <strong>Markup Reference:</strong>
+                <code>[[Page Name]]</code> wiki link &middot;
+                <code>[[Target|Display]]</code> link text &middot;
+                <code>**bold**</code> &middot;
+                <code>*italic*</code> &middot;
+                <code># heading</code> &middot;
+                <code>- list item</code> &middot;
+                <code>| table | header |</code>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Page</button>
+            <a href="/{{ name }}" class="btn">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

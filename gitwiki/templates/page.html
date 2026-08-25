@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ name }} - {{ settings.site_name }}{% endblock %}
+{% block content %}
+<article class="wiki-page">
+    <div class="page-header">
+        <h1>{{ name }}</h1>
+        <div class="page-actions">
+            <a href="/{{ name }}/edit" class="btn">Edit</a>
+            <a href="/{{ name }}/history" class="btn">History</a>
+            <a href="/{{ name }}/raw" class="btn">Raw</a>
+            {% if session.get('is_admin') %}
+            <form method="post" action="/{{ name }}/delete" class="inline-form"
+                  onsubmit="return confirm('Delete this page?')">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="page-content">
+        {{ content|safe }}
+    </div>
+
+    <div class="page-meta">
+        <a href="/{{ name }}/history">View edit history</a>
+    </div>
+</article>
+{% endblock %}

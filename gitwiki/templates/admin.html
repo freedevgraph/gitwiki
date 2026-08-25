@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel - {{ settings.site_name }}{% endblock %}
+{% block content %}
+<div class="admin-page">
+    <h1>Admin Panel</h1>
+
+    <section class="admin-section">
+        <h2>Site Settings</h2>
+        <form method="post" action="/admin/settings" class="settings-form">
+            <div class="form-group">
+                <label for="site_name">Site Name</label>
+                <input type="text" id="site_name" name="site_name" value="{{ settings.site_name }}">
+            </div>
+
+            <div class="form-group">
+                <label for="site_footer">Site Footer</label>
+                <input type="text" id="site_footer" name="site_footer" value="{{ settings.site_footer }}">
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="allow_anonymous"
+                           {% if settings.allow_anonymous %}checked{% endif %}>
+                    Allow anyone to edit and create pages (anonymous editing)
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+    </section>
+
+    <section class="admin-section">
+        <h2>Pages ({{ pages|length }})</h2>
+        {% if pages %}
+        <ul class="page-list">
+            {% for page in pages %}
+                <li>
+                    <a href="/{{ page }}">{{ page }}</a>
+                    <span class="page-actions-small">
+                        <a href="/{{ page }}/edit">Edit</a>
+                        <a href="/{{ page }}/history">History</a>
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+            <p>No pages yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

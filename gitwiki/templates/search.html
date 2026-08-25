@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Search - {{ settings.site_name }}{% endblock %}
+{% block content %}
+<div class="search-page">
+    <h1>Search</h1>
+
+    <form method="get" action="/search" class="search-form">
+        <div class="form-group">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search pages..."
+                   class="search-input">
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    {% if query %}
+    <div class="search-results">
+        <h2>Results for "{{ query }}"</h2>
+        {% if results %}
+        <ul>
+            {% for page in results %}
+                <li><a href="/{{ page }}">{{ page }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+            <p>No pages found matching your search.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ name }} - Page Not Found{% endblock %}
+{% block content %}
+<div class="not-found">
+    <h1>Page Not Found</h1>
+    <p>The page <strong>{{ name }}</strong> does not exist yet.</p>
+    <div class="actions">
+        <a href="/{{ name }}?action=edit" class="btn btn-primary">Create this page</a>
+        <a href="/" class="btn">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

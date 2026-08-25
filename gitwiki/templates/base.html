@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ settings.site_name }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="wrapper">
+        <header class="site-header">
+            <div class="header-left">
+                <a href="/" class="site-title">{{ settings.site_name }}</a>
+            </div>
+            <nav class="header-nav">
+                <a href="/all-pages">All Pages</a>
+                <a href="/search">Search</a>
+                {% if session.get('is_admin') %}
+                    <a href="/admin" class="admin-link">Admin</a>
+                    <a href="/admin/logout">Logout</a>
+                {% else %}
+                    <a href="/admin/login">Admin</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <p>{{ settings.site_footer }}</p>
+        </footer>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

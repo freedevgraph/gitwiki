@@ -1,0 +1,4 @@
+wiki_pages/
+gitwiki_settings.json
+__pycache__/
+*.pyc

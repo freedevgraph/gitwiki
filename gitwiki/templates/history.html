@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}History: {{ name }} - {{ settings.site_name }}{% endblock %}
+{% block content %}
+<div class="history-page">
+    <h1>History: {{ name }}</h1>
+
+    <div class="page-actions">
+        <a href="/{{ name }}" class="btn">Back to Page</a>
+    </div>
+
+    {% if history %}
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Author</th>
+                <th>Message</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in history %}
+            <tr>
+                <td>{{ entry.date }}</td>
+                <td>{{ entry.author }}</td>
+                <td>{{ entry.message }}</td>
+                <td class="history-actions">
+                    <a href="/{{ name }}/diff/{{ entry.hash }}" class="btn btn-small">Diff</a>
+                    {% if not loop.first %}
+                    <form method="post" action="/{{ name }}/revert/{{ entry.hash }}" class="inline-form"
+                          onsubmit="return confirm('Revert to this version?')">
+                        <input type="hidden" name="author" value="Anonymous">
+                        <button type="submit" class="btn btn-small btn-warning">Revert</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No history found.</p>
+    {% endif %}
+</div>
+{% endblock %}

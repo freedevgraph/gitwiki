@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}All Pages - {{ settings.site_name }}{% endblock %}
+{% block content %}
+<div class="all-pages">
+    <h1>All Pages</h1>
+
+    {% if pages %}
+    <ul class="page-list">
+        {% for page in pages %}
+            <li><a href="/{{ page }}">{{ page }}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No pages exist yet.</p>
+    {% endif %}
+
+    <div class="actions">
+        <a href="/New_Page?action=edit" class="btn btn-primary">Create New Page</a>
+    </div>
+</div>
+{% endblock %}
