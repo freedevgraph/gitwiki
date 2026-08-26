@@ -10,7 +10,7 @@ This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDU
 
 1. Fork the repository and clone your fork locally:
    ```bash
-   git clone https://github.com/your-username/gitwiki.git
+   git clone https://github.com/freedevgraph/gitwiki.git
    cd gitwiki
    ```
 
