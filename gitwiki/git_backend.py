@@ -34,8 +34,14 @@ def _repo_root():
 
 def _page_file(name):
     """Return the file path for a wiki page."""
+    if ".." in name or "/" in name or "\\" in name:
+        raise ValueError("Invalid page name: path traversal attempt detected.")
     safe = re.sub(r'[^\w\-]', '_', name)
-    return os.path.join(_repo_root(), f"{safe}.md")
+    root = Path(_repo_root()).resolve()
+    target_path = (root / f"{safe}.md").resolve()
+    if not str(target_path).startswith(str(root)):
+        raise ValueError("Invalid page name: path traversal attempt detected.")
+    return str(target_path)
 
 
 def _page_name_from_file(filepath):
@@ -168,6 +174,8 @@ def revert_page(name, commit_hash, author="Anonymous"):
 
 def get_diff(name, commit_hash):
     """Get diff for a specific commit."""
+    if not re.match(r'^[a-fA-F0-9]+$', commit_hash):
+        return ""
     root = _repo_root()
     safe = re.sub(r'[^\w\-]', '_', name)
     filepath = f"{safe}.md"

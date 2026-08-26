@@ -1,4 +1,5 @@
 """Flask application for GitWiki."""
+import hmac
 import os
 import secrets
 from functools import wraps
@@ -59,49 +60,61 @@ def create_app():
     @app.route("/<name>")
     def view_page(name):
         settings = get_settings()
-        if not gb.page_exists(name):
-            if request.args.get("action") == "edit":
-                return render_template("edit.html", name=name, content="",
-                                       settings=settings, new_page=True)
-            flash(f"Page '{name}' does not exist. Would you like to create it?", "info")
-            return render_template("not_found.html", name=name, settings=settings)
-        content = gb.read_page(name)
-        html_content = render_wiki_markup(content)
-        return render_template("page.html", name=name, content=html_content,
-                               raw=content, settings=settings)
+        try:
+            if not gb.page_exists(name):
+                if request.args.get("action") == "edit":
+                    return render_template("edit.html", name=name, content="",
+                                           settings=settings, new_page=True)
+                flash(f"Page '{name}' does not exist. Would you like to create it?", "info")
+                return render_template("not_found.html", name=name, settings=settings)
+            content = gb.read_page(name)
+            html_content = render_wiki_markup(content)
+            return render_template("page.html", name=name, content=html_content,
+                                   raw=content, settings=settings)
+        except ValueError:
+            abort(400)
 
     @app.route("/<name>/edit", methods=["GET", "POST"])
     def edit_page(name):
         settings = get_settings()
-        if request.method == "POST":
-            if not settings.get("allow_anonymous") and not session.get("is_admin"):
-                flash("Anonymous editing is disabled. Admin login required.", "error")
-                return redirect(url_for("admin_login"))
-            content = request.form.get("content", "")
-            author = request.form.get("author", "Anonymous").strip() or "Anonymous"
-            message = request.form.get("message", "").strip()
-            gb.write_page(name, content, author=author, message=message)
-            flash(f"Page '{name}' saved.", "success")
-            return redirect(url_for("view_page", name=name))
-        content = gb.read_page(name) or ""
-        return render_template("edit.html", name=name, content=content,
-                               settings=settings, new_page=not gb.page_exists(name))
+        if not settings.get("allow_anonymous") and not session.get("is_admin"):
+            flash("Anonymous editing is disabled. Admin login required.", "error")
+            return redirect(url_for("admin_login"))
+        try:
+            if request.method == "POST":
+                content = request.form.get("content", "")
+                author = request.form.get("author", "Anonymous").strip() or "Anonymous"
+                message = request.form.get("message", "").strip()
+                gb.write_page(name, content, author=author, message=message)
+                flash(f"Page '{name}' saved.", "success")
+                return redirect(url_for("view_page", name=name))
+            content = gb.read_page(name) or ""
+            return render_template("edit.html", name=name, content=content,
+                                   settings=settings, new_page=not gb.page_exists(name))
+        except ValueError:
+            abort(400)
 
     @app.route("/<name>/history")
     def page_history(name):
         settings = get_settings()
-        if not gb.page_exists(name):
-            abort(404)
-        history = gb.get_history(name)
-        return render_template("history.html", name=name, history=history,
-                               settings=settings)
+        try:
+            if not gb.page_exists(name):
+                abort(404)
+            history = gb.get_history(name)
+            return render_template("history.html", name=name, history=history,
+                                   settings=settings)
+        except ValueError:
+            abort(400)
 
     @app.route("/<name>/diff/<commit_hash>")
     def page_diff(name, commit_hash):
         settings = get_settings()
-        diff = gb.get_diff(name, commit_hash)
-        return render_template("diff.html", name=name, diff=diff,
-                               commit_hash=commit_hash, settings=settings)
+        try:
+            diff = gb.get_diff(name, commit_hash)
+            return render_template("diff.html", name=name, diff=diff,
+                                   commit_hash=commit_hash, settings=settings)
+        except ValueError:
+            abort(400)
 
     @app.route("/<name>/revert/<commit_hash>", methods=["POST"])
     def revert_page(name, commit_hash):
@@ -109,29 +122,38 @@ def create_app():
         if not settings.get("allow_anonymous") and not session.get("is_admin"):
             flash("Admin login required to revert.", "error")
             return redirect(url_for("admin_login"))
-        author = request.form.get("author", "Anonymous").strip() or "Anonymous"
-        if gb.revert_page(name, commit_hash, author=author):
-            flash(f"Page '{name}' reverted to {commit_hash[:8]}.", "success")
-        else:
-            flash("Revert failed.", "error")
-        return redirect(url_for("view_page", name=name))
+        try:
+            author = request.form.get("author", "Anonymous").strip() or "Anonymous"
+            if gb.revert_page(name, commit_hash, author=author):
+                flash(f"Page '{name}' reverted to {commit_hash[:8]}.", "success")
+            else:
+                flash("Revert failed.", "error")
+            return redirect(url_for("view_page", name=name))
+        except ValueError:
+            abort(400)
 
     @app.route("/<name>/raw")
     def raw_page(name):
-        content = gb.read_page(name)
-        if content is None:
-            abort(404)
-        return content, 200, {"Content-Type": "text/plain; charset=utf-8"}
+        try:
+            content = gb.read_page(name)
+            if content is None:
+                abort(404)
+            return content, 200, {"Content-Type": "text/plain; charset=utf-8"}
+        except ValueError:
+            abort(400)
 
     @app.route("/<name>/delete", methods=["POST"])
     def delete_page(name):
         if not session.get("is_admin"):
             flash("Admin login required.", "error")
             return redirect(url_for("admin_login"))
-        author = request.form.get("author", "Admin").strip() or "Admin"
-        gb.delete_page(name, author=author)
-        flash(f"Page '{name}' deleted.", "success")
-        return redirect(url_for("index"))
+        try:
+            author = request.form.get("author", "Admin").strip() or "Admin"
+            gb.delete_page(name, author=author)
+            flash(f"Page '{name}' deleted.", "success")
+            return redirect(url_for("index"))
+        except ValueError:
+            abort(400)
 
     @app.route("/all-pages")
     def all_pages():
@@ -161,7 +183,7 @@ def create_app():
         settings = get_settings()
         if request.method == "POST":
             password = request.form.get("password", "")
-            if password == ADMIN_PASSWORD:
+            if hmac.compare_digest(password, ADMIN_PASSWORD):
                 session["is_admin"] = True
                 flash("Logged in as admin.", "success")
                 return redirect(url_for("admin_panel"))
