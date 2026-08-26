@@ -10,7 +10,7 @@
 
 We take the security of GitWiki seriously. If you discover a security vulnerability, please do not disclose it publicly in an issue or PR.
 
-Instead, please report vulnerabilities by contacting the maintainers directly or emailing security reports to `security@example.com` (or creating a confidential security advisory on GitHub if applicable).
+Instead, please report vulnerabilities by contacting the maintainers directly or emailing security reports to `newstuff@alwaysdata.net` (or creating a confidential security advisory on GitHub if applicable).
 
 Please include:
 - A description of the vulnerability and its potential impact.
