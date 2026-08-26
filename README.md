@@ -48,3 +48,11 @@ Run the test suite using `pytest`:
 ```bash
 python -m pytest
 ```
+
+## Security & Contributing
+
+For guidelines on security practices, reporting vulnerabilities, contributing, and our community standards, please refer to:
+- [SECURITY.md](SECURITY.md) - Security Policy & Reporting Vulnerabilities
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution Guidelines
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - Contributor Covenant Code of Conduct
+- [LICENSE](LICENSE) - Project License
