@@ -14,7 +14,7 @@ GitWiki is a lightweight, Git-backed Flask web application for managing wiki pag
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/freedevgraph/gitwiki
    cd gitwiki
    ```
 
