@@ -21,6 +21,7 @@
                 {% else %}
                     <a href="/admin/login">Admin</a>
                 {% endif %}
+                <button type="button" id="theme-toggle" class="btn btn-small" aria-label="Toggle dark mode" style="margin-left: 1rem;">🌙 Dark</button>
             </nav>
         </header>
 
@@ -42,5 +43,34 @@
     </div>
 
     {% block scripts %}{% endblock %}
+    <script>
+        (function() {
+            const toggleBtn = document.getElementById('theme-toggle');
+            const storedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            let currentTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    if (toggleBtn) toggleBtn.textContent = '☀️ Light';
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    if (toggleBtn) toggleBtn.textContent = '🌙 Dark';
+                }
+            }
+
+            applyTheme(currentTheme);
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    localStorage.setItem('theme', currentTheme);
+                    applyTheme(currentTheme);
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
