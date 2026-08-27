@@ -1,6 +1,6 @@
 /* GitWiki - MediaWiki-inspired styles */
 
-:root {
+:root, [data-theme="light"] {
     --primary: #36c;
     --primary-hover: #2a4b8d;
     --bg: #f6f6f6;
@@ -46,6 +46,30 @@
     --input-border: #444;
     --hover-bg: #2a2a2a;
     --btn-hover-bg: #2a374e;
+}
+
+[data-theme="amoled"] {
+    --primary: #6699ff;
+    --primary-hover: #88b0ff;
+    --bg: #000000;
+    --surface: #0a0a0a;
+    --border: #222222;
+    --border-subtle: #1c1c1c;
+    --text: #e0e0e0;
+    --text-light: #888888;
+    --danger: #ff5555;
+    --warning: #ffb86c;
+    --success: #50fa7b;
+    --flash-error: #220808;
+    --flash-success: #0a2010;
+    --flash-info: #081828;
+    --code-bg: #0d0d0d;
+    --code-inline-bg: #141414;
+    --table-header-bg: #111111;
+    --input-bg: #050505;
+    --input-border: #333;
+    --hover-bg: #141414;
+    --btn-hover-bg: #182438;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
