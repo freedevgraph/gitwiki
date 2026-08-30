@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""GitWiki entry point."""
+"""GitWiki development entry point."""
 from gitwiki.app import create_app
 
 app = create_app()
