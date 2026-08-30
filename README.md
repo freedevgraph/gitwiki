@@ -28,10 +28,16 @@ GitWiki is a lightweight, Git-backed Flask web application for managing wiki pag
 To start the Flask development server:
 
 ```bash
-python run.py
+python run_development.py
 ```
 
-By default, the application runs on `http://127.0.0.1:5000`.
+To start the server in production mode:
+
+```bash
+python run_production.py
+```
+
+By default, the application runs on `http://127.0.0.1:5000` in development mode.
 
 ### Admin Credentials
 
