@@ -47,6 +47,76 @@ export GITWIKI_ADMIN_PASSWORD="your_secure_password"
 ```
 If unset, the default password is `admin`.
 
+## Production Deployment
+
+For production environments, running the built-in Flask development server directly is not recommended. Instead, use a production-grade WSGI HTTP server (such as Gunicorn, uWSGI, or Waitress) sitting behind a reverse proxy (such as Nginx or Caddy).
+
+### WSGI Server Configuration
+
+GitWiki exposes WSGI application entry points via `run_production:app` or factory `gitwiki.app:create_app()`.
+
+#### 1. Gunicorn (Linux/macOS)
+
+Install Gunicorn (`pip install gunicorn`) and run:
+
+```bash
+gunicorn --workers 4 --bind 127.0.0.1:8000 "gitwiki.app:create_app()"
+# or using the production script entry point:
+gunicorn --workers 4 --bind 127.0.0.1:8000 run_production:app
+```
+
+#### 2. uWSGI (Linux/macOS)
+
+Install uWSGI (`pip install uwsgi`) and run:
+
+```bash
+uwsgi --http 127.0.0.1:8000 --wsgi-file run_production.py --callable app --processes 4 --threads 2
+```
+
+#### 3. Waitress (Windows/Cross-platform)
+
+Install Waitress (`pip install waitress`) and run:
+
+```bash
+waitress-serve --listen=127.0.0.1:8000 run_production:app
+```
+
+### Security & Production Best Practices
+
+1. **Reverse Proxy & TLS/SSL Termination**
+   - Always run WSGI servers bound to localhost (`127.0.0.1`) or a UNIX socket, and proxy requests through Nginx or Caddy.
+   - Configure HTTPS/TLS on the reverse proxy to encrypt traffic in transit.
+
+2. **Handling Reverse Proxy Headers (`ProxyFix`)**
+   - When running behind a reverse proxy, configure Flask to respect proxy headers (`X-Forwarded-For`, `X-Forwarded-Proto`) using Werkzeug's `ProxyFix` middleware if needed:
+     ```python
+     from werkzeug.middleware.proxy_fix import ProxyFix
+     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+     ```
+
+3. **Environment Security**
+   - **Admin Password**: Always set a strong, secret value for `GITWIKI_ADMIN_PASSWORD` in your production environment.
+   - **Process Isolation**: Run the WSGI server process under an unprivileged, non-root user account (e.g., `gitwiki` service user).
+
+4. **Process Management (systemd example)**
+   Create a systemd unit file (e.g., `/etc/systemd/system/gitwiki.service`):
+   ```ini
+   [Unit]
+   Description=GitWiki WSGI Application
+   After=network.target
+
+   [Service]
+   User=gitwiki
+   Group=gitwiki
+   WorkingDirectory=/var/www/gitwiki
+   Environment="GITWIKI_ADMIN_PASSWORD=change_this_to_a_strong_password"
+   ExecStart=/var/www/gitwiki/venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 "gitwiki.app:create_app()"
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
 ## Running Tests
 
 Run the test suite using `pytest`:
