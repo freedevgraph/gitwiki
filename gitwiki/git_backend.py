@@ -13,6 +13,8 @@ DEFAULT_SETTINGS = {
     "site_name": "GitWiki",
     "allow_anonymous": False,
     "site_footer": "Powered by GitWiki",
+    "auto_push": False,
+    "default_remote": "origin",
 }
 
 
@@ -105,6 +107,17 @@ def read_page(name):
         return f.read()
 
 
+def _maybe_auto_push():
+    """Attempt auto-push if enabled in settings."""
+    try:
+        settings = load_settings()
+        if settings.get("auto_push"):
+            remote = settings.get("default_remote", "origin")
+            push_remote(remote)
+    except Exception:
+        pass
+
+
 def write_page(name, content, author="Anonymous", message=None):
     """Write content to a page and commit to git."""
     path = _page_file(name)
@@ -123,6 +136,7 @@ def write_page(name, content, author="Anonymous", message=None):
         ["git", "commit", "-m", msg],
         capture_output=True, text=True, cwd=root, env=env
     )
+    _maybe_auto_push()
 
 
 def get_history(name, limit=50):
@@ -203,4 +217,92 @@ def delete_page(name, author="Anonymous"):
         ["git", "commit", "-m", f"Delete page '{name}'"],
         capture_output=True, text=True, cwd=root, env=env
     )
+    _maybe_auto_push()
     return True
+
+
+def list_remotes():
+    """Return a list of configured Git remotes with fetch and push URLs."""
+    root = _repo_root()
+    try:
+        output = _run_git("remote", "-v", cwd=root)
+    except RuntimeError:
+        return []
+    if not output:
+        return []
+
+    remotes = {}
+    for line in output.splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            name, url = parts[0], parts[1]
+            role = parts[2].strip("()") if len(parts) >= 3 else "fetch"
+            if name not in remotes:
+                remotes[name] = {"name": name, "fetch_url": url, "push_url": url}
+            if role == "fetch":
+                remotes[name]["fetch_url"] = url
+            elif role == "push":
+                remotes[name]["push_url"] = url
+    return list(remotes.values())
+
+
+def add_remote(name, url):
+    """Add a git remote."""
+    if not name or not url:
+        raise ValueError("Remote name and URL are required.")
+    if not re.match(r'^[\w\.\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    root = _repo_root()
+    _run_git("remote", "add", name, url, cwd=root)
+    return True
+
+
+def remove_remote(name):
+    """Remove a git remote."""
+    if not name or not re.match(r'^[\w\.\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    root = _repo_root()
+    _run_git("remote", "remove", name, cwd=root)
+    return True
+
+
+def get_current_branch():
+    """Get the current checked-out Git branch name."""
+    root = _repo_root()
+    try:
+        branch = _run_git("rev-parse", "--abbrev-ref", "HEAD", cwd=root)
+        if branch and branch != "HEAD":
+            return branch
+    except RuntimeError:
+        pass
+    return "main"
+
+
+def fetch_remote(name="origin"):
+    """Fetch from a git remote."""
+    if not name or not re.match(r'^[\w\.\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    root = _repo_root()
+    return _run_git("fetch", name, cwd=root)
+
+
+def pull_remote(name="origin", branch=None):
+    """Pull from a git remote."""
+    if not name or not re.match(r'^[\w\.\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    if branch and not re.match(r'^[\w\.\-\/]+$', branch):
+        raise ValueError("Invalid branch name.")
+    target_branch = branch or get_current_branch()
+    root = _repo_root()
+    return _run_git("pull", name, target_branch, cwd=root)
+
+
+def push_remote(name="origin", branch=None):
+    """Push to a git remote."""
+    if not name or not re.match(r'^[\w\.\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    if branch and not re.match(r'^[\w\.\-\/]+$', branch):
+        raise ValueError("Invalid branch name.")
+    target_branch = branch or get_current_branch()
+    root = _repo_root()
+    return _run_git("push", "-u", name, target_branch, cwd=root)

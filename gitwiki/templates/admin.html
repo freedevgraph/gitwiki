@@ -25,7 +25,78 @@
                 </label>
             </div>
 
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="auto_push"
+                           {% if settings.auto_push %}checked{% endif %}>
+                    Automatically push commits to remote
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="default_remote">Default Remote</label>
+                <input type="text" id="default_remote" name="default_remote" value="{{ settings.default_remote or 'origin' }}">
+            </div>
+
             <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+    </section>
+
+    <section class="admin-section">
+        <h2>Git Remotes</h2>
+        {% if remotes %}
+        <table class="remotes-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Fetch URL</th>
+                    <th>Push URL</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for remote in remotes %}
+                <tr>
+                    <td><strong>{{ remote.name }}</strong></td>
+                    <td><code>{{ remote.fetch_url }}</code></td>
+                    <td><code>{{ remote.push_url }}</code></td>
+                    <td>
+                        <form method="post" action="/admin/remotes/fetch" style="display:inline;">
+                            <input type="hidden" name="name" value="{{ remote.name }}">
+                            <button type="submit" class="btn btn-sm">Fetch</button>
+                        </form>
+                        <form method="post" action="/admin/remotes/pull" style="display:inline;">
+                            <input type="hidden" name="name" value="{{ remote.name }}">
+                            <button type="submit" class="btn btn-sm">Pull</button>
+                        </form>
+                        <form method="post" action="/admin/remotes/push" style="display:inline;">
+                            <input type="hidden" name="name" value="{{ remote.name }}">
+                            <button type="submit" class="btn btn-sm">Push</button>
+                        </form>
+                        <form method="post" action="/admin/remotes/remove" style="display:inline;" onsubmit="return confirm('Remove remote {{ remote.name }}?');">
+                            <input type="hidden" name="name" value="{{ remote.name }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No Git remotes configured.</p>
+        {% endif %}
+
+        <h3>Add New Remote</h3>
+        <form method="post" action="/admin/remotes/add" class="add-remote-form">
+            <div class="form-group">
+                <label for="remote_name">Remote Name</label>
+                <input type="text" id="remote_name" name="name" placeholder="e.g. origin" required>
+            </div>
+            <div class="form-group">
+                <label for="remote_url">Remote URL</label>
+                <input type="text" id="remote_url" name="url" placeholder="e.g. https://github.com/user/repo.git" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Remote</button>
         </form>
     </section>
 

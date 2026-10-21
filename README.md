@@ -6,8 +6,9 @@ GitWiki is a lightweight, Git-backed Flask web application for managing wiki pag
 
 - **Markdown Support & Wiki Links**: Render pages with Markdown syntax, including wiki-style internal links `[[PageName]]` or `[[PageName|Display Text]]`.
 - **Git Revisions & History**: Page edits are saved as commits in a dedicated Git repository (`wiki_pages/`). View version history, diffs between commits, and revert pages to previous commits.
+- **Git Remotes Management**: Add, view, remove, fetch, pull, and push to remote Git repositories from the admin panel, with optional automatic pushing on edits.
 - **Search & Page Management**: Full-text search across wiki pages, view all pages list, raw page views, and page deletion.
-- **Admin Panel & Settings**: Configure site name, custom footer, and toggle anonymous page editing permissions.
+- **Admin Panel & Settings**: Configure site name, custom footer, toggle anonymous page editing permissions, and configure Git remotes and auto-push.
 - **Security Features**: Input path sanitization to prevent path traversal vulnerabilities and constant-time admin password checks.
 
 ## Installation
