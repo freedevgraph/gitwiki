@@ -30,6 +30,53 @@
     </section>
 
     <section class="admin-section">
+        <h2>Git Remotes</h2>
+        <form method="post" action="/admin/remotes/add" class="settings-form">
+            <div class="form-group">
+                <label for="remote_name">Remote Name</label>
+                <input type="text" id="remote_name" name="name" placeholder="origin" required>
+            </div>
+            <div class="form-group">
+                <label for="remote_url">Remote URL</label>
+                <input type="text" id="remote_url" name="url" placeholder="https://github.com/user/repo.git" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Remote</button>
+        </form>
+
+        {% if remotes %}
+        <ul class="page-list" style="margin-top: 1rem;">
+            {% for name, url in remotes.items() %}
+                <li style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid #ddd;">
+                    <div>
+                        <strong>{{ name }}</strong>: <code style="font-size: 0.9em;">{{ url }}</code>
+                    </div>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <form method="post" action="/admin/remotes/fetch" style="display:inline;">
+                            <input type="hidden" name="name" value="{{ name }}">
+                            <button type="submit" class="btn btn-sm">Fetch</button>
+                        </form>
+                        <form method="post" action="/admin/remotes/pull" style="display:inline;">
+                            <input type="hidden" name="name" value="{{ name }}">
+                            <button type="submit" class="btn btn-sm">Pull</button>
+                        </form>
+                        <form method="post" action="/admin/remotes/push" style="display:inline;">
+                            <input type="hidden" name="name" value="{{ name }}">
+                            <button type="submit" class="btn btn-sm">Push</button>
+                        </form>
+                        <form method="post" action="/admin/remotes/remove" style="display:inline;">
+                            <input type="hidden" name="name" value="{{ name }}">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove remote {{ name }}?');">Remove</button>
+                        </form>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+            <p style="margin-top: 1rem;">No Git remotes configured.</p>
+        {% endif %}
+    </section>
+
+    <section class="admin-section">
         <h2>Pages ({{ pages|length }})</h2>
         {% if pages %}
         <ul class="page-list">

@@ -86,3 +86,43 @@ def test_history_diff_and_revert(repo_env):
 def test_history_for_nonexistent_page(repo_env):
     history = gb.get_history("NoSuchPage")
     assert history == []
+
+
+def test_remotes_management_and_operations(repo_env, tmp_path):
+    # Initial remotes should be empty
+    assert gb.list_remotes() == {}
+
+    # Setup a local bare git repo to act as remote
+    remote_path = str(tmp_path / "remote_repo.git")
+    gb._run_git("init", "--bare", remote_path)
+
+    # Test invalid remote additions
+    with pytest.raises(ValueError):
+        gb.add_remote("invalid name!", remote_path)
+    with pytest.raises(ValueError):
+        gb.add_remote("origin", "")
+
+    # Add valid remote
+    gb.add_remote("origin", remote_path)
+    remotes = gb.list_remotes()
+    assert "origin" in remotes
+    assert remotes["origin"] == remote_path
+
+    # Test fetch
+    fetch_out = gb.fetch_remote("origin")
+    assert fetch_out == "" or fetch_out is not None
+
+    # Test push
+    push_out = gb.push_remote("origin")
+    assert push_out == "" or push_out is not None
+
+    # Test pull
+    pull_out = gb.pull_remote("origin")
+    assert pull_out == "" or pull_out is not None
+
+    # Test remove remote
+    with pytest.raises(ValueError):
+        gb.remove_remote("invalid name!")
+
+    gb.remove_remote("origin")
+    assert gb.list_remotes() == {}

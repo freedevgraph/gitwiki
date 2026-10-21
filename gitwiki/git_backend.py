@@ -204,3 +204,82 @@ def delete_page(name, author="Anonymous"):
         capture_output=True, text=True, cwd=root, env=env
     )
     return True
+
+
+def get_current_branch():
+    """Return the name of the active branch."""
+    root = _repo_root()
+    try:
+        branch = _run_git("rev-parse", "--abbrev-ref", "HEAD", cwd=root)
+        if branch == "HEAD":
+            return "main"
+        return branch
+    except RuntimeError:
+        return "main"
+
+
+def list_remotes():
+    """Return a dictionary of remote names to their URLs."""
+    root = _repo_root()
+    try:
+        output = _run_git("remote", "-v", cwd=root)
+    except RuntimeError:
+        return {}
+    remotes = {}
+    for line in output.splitlines():
+        parts = line.split()
+        if len(parts) >= 2:
+            name, url = parts[0], parts[1]
+            if name not in remotes:
+                remotes[name] = url
+    return remotes
+
+
+def add_remote(name, url):
+    """Add a new git remote."""
+    if not name or not re.match(r'^[a-zA-Z0-9_\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    if not url or not url.strip():
+        raise ValueError("Invalid remote URL.")
+    root = _repo_root()
+    _run_git("remote", "add", name, url.strip(), cwd=root)
+
+
+def remove_remote(name):
+    """Remove an existing git remote."""
+    if not name or not re.match(r'^[a-zA-Z0-9_\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    root = _repo_root()
+    _run_git("remote", "remove", name, cwd=root)
+
+
+def fetch_remote(name="origin"):
+    """Fetch from a git remote."""
+    if not name or not re.match(r'^[a-zA-Z0-9_\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    root = _repo_root()
+    return _run_git("fetch", name, cwd=root)
+
+
+def push_remote(name="origin", branch=None):
+    """Push current commits to a git remote."""
+    if not name or not re.match(r'^[a-zA-Z0-9_\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    if not branch:
+        branch = get_current_branch()
+    if not re.match(r'^[a-zA-Z0-9_\-\/]+$', branch):
+        raise ValueError("Invalid branch name.")
+    root = _repo_root()
+    return _run_git("push", name, branch, cwd=root)
+
+
+def pull_remote(name="origin", branch=None):
+    """Pull changes from a git remote."""
+    if not name or not re.match(r'^[a-zA-Z0-9_\-]+$', name):
+        raise ValueError("Invalid remote name.")
+    if not branch:
+        branch = get_current_branch()
+    if not re.match(r'^[a-zA-Z0-9_\-\/]+$', branch):
+        raise ValueError("Invalid branch name.")
+    root = _repo_root()
+    return _run_git("pull", name, branch, cwd=root)

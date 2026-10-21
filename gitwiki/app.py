@@ -201,7 +201,8 @@ def create_app():
     def admin_panel():
         settings = get_settings()
         pages = gb.list_pages()
-        return render_template("admin.html", pages=pages, settings=settings)
+        remotes = gb.list_remotes()
+        return render_template("admin.html", pages=pages, settings=settings, remotes=remotes)
 
     @app.route("/admin/settings", methods=["POST"])
     @login_required
@@ -212,6 +213,64 @@ def create_app():
         settings["allow_anonymous"] = request.form.get("allow_anonymous") == "on"
         gb.save_settings(settings)
         flash("Settings updated.", "success")
+        return redirect(url_for("admin_panel"))
+
+    @app.route("/admin/remotes/add", methods=["POST"])
+    @login_required
+    def admin_add_remote():
+        name = request.form.get("name", "").strip()
+        url = request.form.get("url", "").strip()
+        try:
+            gb.add_remote(name, url)
+            flash(f"Remote '{name}' added successfully.", "success")
+        except (ValueError, RuntimeError) as e:
+            flash(f"Failed to add remote: {e}", "error")
+        return redirect(url_for("admin_panel"))
+
+    @app.route("/admin/remotes/remove", methods=["POST"])
+    @login_required
+    def admin_remove_remote():
+        name = request.form.get("name", "").strip()
+        try:
+            gb.remove_remote(name)
+            flash(f"Remote '{name}' removed successfully.", "success")
+        except (ValueError, RuntimeError) as e:
+            flash(f"Failed to remove remote: {e}", "error")
+        return redirect(url_for("admin_panel"))
+
+    @app.route("/admin/remotes/fetch", methods=["POST"])
+    @login_required
+    def admin_fetch_remote():
+        name = request.form.get("name", "").strip()
+        try:
+            output = gb.fetch_remote(name)
+            flash(f"Fetched from remote '{name}'. {output}".strip(), "success")
+        except (ValueError, RuntimeError) as e:
+            flash(f"Failed to fetch from remote: {e}", "error")
+        return redirect(url_for("admin_panel"))
+
+    @app.route("/admin/remotes/push", methods=["POST"])
+    @login_required
+    def admin_push_remote():
+        name = request.form.get("name", "").strip()
+        branch = request.form.get("branch", "").strip() or None
+        try:
+            output = gb.push_remote(name, branch=branch)
+            flash(f"Pushed to remote '{name}'. {output}".strip(), "success")
+        except (ValueError, RuntimeError) as e:
+            flash(f"Failed to push to remote: {e}", "error")
+        return redirect(url_for("admin_panel"))
+
+    @app.route("/admin/remotes/pull", methods=["POST"])
+    @login_required
+    def admin_pull_remote():
+        name = request.form.get("name", "").strip()
+        branch = request.form.get("branch", "").strip() or None
+        try:
+            output = gb.pull_remote(name, branch=branch)
+            flash(f"Pulled from remote '{name}'. {output}".strip(), "success")
+        except (ValueError, RuntimeError) as e:
+            flash(f"Failed to pull from remote: {e}", "error")
         return redirect(url_for("admin_panel"))
 
     # --- Error handlers ---
